@@ -1,0 +1,19 @@
+build/
+runtime_logs/
+
+# Qt Creator / IDE local state
+.qtc_clangd/
+.qtcreator/
+.idea/
+.vscode/
+
+# Local machine files
+compile_commands.json
+*.user
+*.user.*
+*.autosave
+*.swp
+
+# Test and crash artifacts
+core
+core.*

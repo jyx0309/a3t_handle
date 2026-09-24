@@ -1,0 +1,26 @@
+{
+  "controller_ip": "10.42.0.101",
+  "log_directory": "runtime_logs",
+  "poll_interval_ms": 100,
+  "drag": {
+    "torque_factor": 1.0,
+    "friction_compensation_factor": 0.8
+  },
+  "handle": {
+    "position_scale": 1.0,
+    "rotation_scale": 1.0,
+    "position_stiffness": 20.0,
+    "position_damping": 4.0,
+    "rotation_stiffness": 1.0,
+    "rotation_damping": 0.1
+  },
+  "mit": {
+    "allow_real_mit": false,
+    "period_ms": 10,
+    "joint_kp": 0.0,
+    "joint_kd": 0.0,
+    "torque_limit_nm": 5.0,
+    "torque_rate_limit_nm_s": 20.0,
+    "max_failures": 3
+  }
+}
