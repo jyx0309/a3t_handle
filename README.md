@@ -1,58 +1,125 @@
-# A3-T Handle Project
+# A3-T 底层 MIT 手柄（最小实现）
 
-Qt/C++ desktop application that uses an A3-T robot arm as a 6-DOF physical handle. The project
-keeps the vendor SDK separate and places all SDK access in `src/arm/arm_worker.cpp`.
+只保留已验证的闭环：**连接 → 缓存回接/到中心 → 连续 MIT 手柄 → 返回高层**。
+高层回零、拖动及工具选择使用厂家上位机。不要让两套界面同时发送运动命令。
+无自动启动、自动循环、J3 加力、单帧/时序探针、示教回放或自动高层回零入口。
 
-## Repository scope
+## 构建与启动
 
-This repository contains only project-owned source code, configuration, and documentation. It
-does **not** contain the vendor SDK, firmware packages, CMake build output, or runtime logs.
+可选的默认关闭本地控制入口见 [LOCAL_CONTROL.md](docs/LOCAL_CONTROL.md)，复用 GUI 控制线程，不自动连接或运动。
 
-Tested dependency version: `arm_control_sdk-main.dev-1.0.260819` for Linux amd64.
+中心附近逐关节起动力矩采集入口及停止条件见 [FRICTION_PROBE.md](docs/FRICTION_PROBE.md)。
+仅监督式单次试验，不自动应用摩擦补偿。
 
-Place the unpacked vendor SDK beside this repository:
-
-```text
-A3-T/
-├── a3t_handle/        # this repository
-└── arm_control_sdk/   # vendor dependency; not committed
-```
-
-Or configure a different SDK path when building with
-`-DARM_CONTROL_SDK_DIR=/absolute/path/to/arm_control_sdk`.
-
-## Current capabilities
-
-- Connection/status display, Ready, servo disable, emergency stop, speed and collision settings
-- Vendor Drag mode, drag parameter tuning, trajectory recording and replay
-- Session logging for events, commands, state polls, timing, and Handle data
-- Handle V0: center capture, 6-DOF relative pose, deadband/filter/scale, and virtual wrench display
-- MIT Handle control path: Cartesian virtual spring-damper, SDK kinematics/dynamics/Jacobian,
-  and torque mapping. It is disabled by default through `mit.allow_real_mit=false` until it has
-  been validated with the real arm.
-
-## Source layout
-
-```text
-src/
-  arm/       Sole vendor-SDK access layer and robot worker thread
-  control/   Application mode FSM and MIT torque-command mapping
-  logging/   Per-session CSV logger
-  math/      Pose/quaternion and virtual spring-damper calculations
-  safety/    Safety state and transition checks
-  ui/        Qt desktop interface
-config/      Connection and controller parameters
-```
-
-## Build
-
-Requirements: Linux amd64, CMake >= 3.16, C++17 compiler, Qt5 Widgets, and the vendor SDK above.
+在本项目目录运行：
 
 ```bash
 cmake -S . -B build
-cmake --build build -j
+cmake --build build -j4
+ctest --test-dir build --output-on-failure
 ./build/a3t_handle
 ```
 
-Robot commands affect real hardware. Clear the workspace, keep the physical emergency stop
-reachable, and avoid simultaneously commanding the arm from the vendor web UI.
+依赖 Qt5 Widgets/Xml、Eigen3、C++17 和相邻的 `../arm_control_sdk`。配置默认读取
+可执行文件相邻的 `../config/handle.json`，也可通过首个命令行参数指定。
+`--smoke-test` 仅进行离线 UI 检查，不连接机械臂。
+
+## 使用
+
+1. 确认现场急停与路径安全，连接设备；复位/使能必须人工确认。
+2. 点击“进入底层手柄”。保持原有缓存回接和到中心流程，此操作会实际运动，
+   不具有环境碰撞路径规划功能。
+3. 拖动进行手感验证，使用“记录松手 / 现象备注”标记测试事件。
+   如需诊断重力，在启动保持结束后可选择「纯重力测试（零刚度／零阻尼）」。
+   确认后用 1 秒撤除其他力项；等待状态显示“纯重力”再记录。此时不会回中、
+   可能漂移或下坠，必须有现场支撑/防坠与实体急停。正常参数不修改，退出再进入恢复。
+4. 点击“停止手柄并返回高层”，只发送低层下使能、关闭透传，再观察 5 秒。
+   返回高层 **不保证已下使能**；读取界面的真实使能反馈。
+5. 无新增错误且观察到高层 idle/position 后可手动进行下一轮。
+   高层回零使用厂家上位机，停止高层任务后再进入手柄。
+
+故障时不自动恢复、不重新使能。退出锁定时先按现场安全流程确认设备，再人工
+断开/恢复；不能把关闭软件当作物理急停。当前缓存回接和到中心仍使用同步 SDK
+运动调用，期间 GUI 的排队停止请求可能延迟，实体急停必须可操作。
+
+## 参数与算法
+
+“近中心回正辅助”页提供每轴开关、平台幅值、内过渡宽度和距中心的外边界。
+启用方向替代旧 breakaway 项；未启用方向保留旧行为；启用且幅值为零可禁用该轴附加回正。
+初值仅供试验，新功能默认关闭。沿用停止后应用/原子保存流程，
+保存为 `handle.near_assist` 对象中的六元素数组
+`enabled/amplitude/inner_transition/range`（XYZ/RxRyRz）。
+XYZ 使用 m、N，旋转使用 rad、N·m。
+
+设死区 d、过渡宽度 w、外边界 r：d 内辅助为零，d 到 d+w 用 smoothstep
+升至幅值，之后保持平台；从 d+0.75(r-d) 开始平滑降至 r 处的零。
+必须满足 0<w<0.75(r-d)。这是随位置变化的辅助，无计时、停滞判断或积分。
+预览展示未应用的编辑值，静态弹簧及新辅助的幅值，不含旧回正项、阻尼和关节补偿。
+日志 control_math 的 `handle_error/handle_velocity/return_assist_requested/assist_region`
+用于比较回中效果；辅助是模式缩放前的请求，实际手柄输出还乘 interaction_scale，
+纯重力模式会撤除。区域码 -1=旧算法，0=死区，1=内过渡，2=平台，3=外渐退，4=范围外。
+
+界面“手柄调参”提供两个页签：笛卡尔六方向 K/D（基座 X/Y/Z/Rx/Ry/Rz）
+以及 MIT 六关节 kp/kd。停止手柄且退出观察结束后可应用。
+“应用（本次会话）”不写磁盘；“应用并保存配置”原子更新当前加载的配置文件，
+仅修改这四组参数，并记录 `tuning_applied` 日志。保存失败时不会应用本次修改。
+
+`handle.cartesian_stiffness[6]`、`handle.cartesian_damping[6]` 为直接使用的独立增益，
+优先于旧的统一刚度/阻尼及方向倍率；旧配置缺少这两组字段时仍按旧公式工作，
+界面按等效值显示。前三轴单位为 N/m、N·s/m，后三轴为 N·m/rad、N·m·s/rad。
+初始独立增益与此前等效值一致。回正力、关节中心辅助和摩擦补偿仍按原配置单独叠加。
+
+MIT 页修改 `mit.normal_joint_kp[6]`、`mit.normal_joint_kd[6]`，下一次进入 MIT 使用新值。
+正常手柄的目标角仍跟随实测关节角，目标速度为零；纯重力测试会将增益平滑降为零，
+停止后重新进入普通手柄恢复已应用的增益。
+
+`config/handle.json` 是持久配置。GUI 支持四个刚度/阻尼参数的会话级修改，
+必须先停止手柄；轴向缩放、中心、关节辅助、死区和力矩限制在配置文件修改。
+当前是第一轮阻尼调参配置；参数变化、回退值和实测步骤见下方说明。
+
+当前配置使用 `gravity.source=urdf`，并启用已验证的 `gravity.compensation`（须重启加载，配置修改不改变正在运行的会话）。本地模型基准为 `config/gravity_gripper_can.urdf`，
+按上位机 gripper_can 参数替换整套夹爪：质量 0.537306 kg，质心 [0, 0, 0.033631] m，
+假设工具参数参考系与 link6 重合；手指质量已包含，不重复叠加。用户已确认摄像头拆除；额外转接件仍需核对。
+完整补偿会在该基准上应用辨识出的连杆/负载物理参数与各关节残差（含 J2），不再采用 25% 限幅、位移/速度门限或 30 秒自动退出。低速回正另有方向相关的静摩擦辅助；它随回正力方向工作并在关节运动时退出，不与重力残差混用。
+切换本地计算或补偿开关需停止实验后修改配置并重启，不能在使能期间热切换。
+本地整机重力与 SDK 整机重力不能相加；SDK 模式下上述 URDF 路径不改变实机补偿。
+URDF 假设基座竖直，不包含额外摄像头/支架补偿；首次切换先在中心附近验证，
+出现明显漂移/加速即按现场安全流程停止。不要把更大模型力矩直接当作更准确。
+
+详见 [控制与调参说明](docs/CONTROL_AND_TUNING.md)。
+
+## 日志与离线验证
+
+`runtime_logs/<时间>/` 保存配置、SDK 版本/哈希、模式切换、关节状态、力矩分项、
+发送命令和回复，以及手柄误差与现场备注。历史日志不删除。
+
+```bash
+python3 tools/analyze_session.py runtime_logs/<会话目录>
+```
+
+独立 URDF 重力对比（需 NumPy，只读日志，不连接 SDK）：
+
+```bash
+python3 tools/compare_urdf_gravity.py ../carm_a3t/carm_a3t/urdf/carm_a3t.urdf runtime_logs/<会话目录>
+python3 tests/test_urdf_gravity.py
+```
+
+只选取纯重力、实际命令 kp/kd 为零且重力未被限幅改变、MIT 应答成功的帧。
+默认每 20 帧取一帧，假设基座竖直、重力沿 -Z、SDK 与 URDF 关节角一致，手指开度为零；
+支持 `--finger 0.037`（每侧行程，米）。先核对报告的 FK 差异再解释力矩差。
+它不是在线控制模型，不包含摩擦，模型间差异不能直接作为实机补偿。
+
+保留三项离线检查：算法/配置/安全单测、UI 启动检查、日志解析测试。
+它们不证明实机运动安全，也不代替重构后的现场循环验收。
+
+## 目录
+
+- `src/arm`：唯一的硬件控制线程、入场与最小退出。
+- `src/math`、`src/control`：笛卡尔回正、关节力矩与启动承接。
+- `src/safety`、`src/config`：必要保护与配置校验。
+- `src/ui`、`src/logging`：单页 GUI 与会话日志。
+- `tests`、`tools/analyze_session.py`：离线回归和分析，不控制硬件。
+
+精简前源代码、配置、全部旧文档及实验工具已备份到项目外：
+`/home/yuxuan/A3-T-cleanup-backup-K0iVRk/source-before-cleanup.tar.gz`。
+厂家 SDK 和历史运行日志未修改。

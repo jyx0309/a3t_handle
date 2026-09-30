@@ -17,3 +17,6 @@ compile_commands.json
 # Test and crash artifacts
 core
 core.*
+Testing/
+__pycache__/
+*.pyc

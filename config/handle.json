@@ -1,26 +1,179 @@
 {
-  "controller_ip": "10.42.0.101",
-  "log_directory": "runtime_logs",
-  "poll_interval_ms": 100,
-  "drag": {
-    "torque_factor": 1.0,
-    "friction_compensation_factor": 0.8
-  },
-  "handle": {
-    "position_scale": 1.0,
-    "rotation_scale": 1.0,
-    "position_stiffness": 20.0,
-    "position_damping": 4.0,
-    "rotation_stiffness": 1.0,
-    "rotation_damping": 0.1
-  },
-  "mit": {
-    "allow_real_mit": false,
-    "period_ms": 10,
-    "joint_kp": 0.0,
-    "joint_kd": 0.0,
-    "torque_limit_nm": 5.0,
-    "torque_rate_limit_nm_s": 20.0,
-    "max_failures": 3
-  }
+    "controller_ip": "10.42.0.101",
+    "gravity": {
+        "compensation": {
+            "base_sha256": "262c4cacdc8f40c6c04f34aee8255cd46ecec9b846bbcc8d8d4f71f13ddcb282",
+            "enabled": false,
+            "parameter_delta": [
+                0.00029498147876614716,
+                -0.02,
+                0,
+                0.007327879583522159,
+                0.006281505679824627,
+                0,
+                0.011289359903009433,
+                -0.0009533468625387454,
+                0,
+                0.09999999999970766,
+                0.005085385158052422,
+                -0.00494248215420607,
+                0.026293492468900507
+            ],
+            "residual_nm": [
+                0,
+                0.07461023400944163,
+                -0.11015107384390396,
+                -0.05060884647323208,
+                0,
+                0
+            ]
+        },
+        "source": "sdk",
+        "urdf_path": "gravity_gripper_can.urdf"
+    },
+    "handle": {
+        "cartesian_damping": [
+            3.5,
+            3.5,
+            3.5,
+            0.03,
+            0.03,
+            0.03
+        ],
+        "cartesian_stiffness": [
+            50,
+            50,
+            50,
+            1,
+            1,
+            1
+        ],
+        "near_assist": {
+            "amplitude": [
+                3.5,
+                3.5,
+                3.5,
+                0.02,
+                0.02,
+                0.02
+            ],
+            "enabled": [
+                true,
+                true,
+                true,
+                false,
+                false,
+                false
+            ],
+            "inner_transition": [
+                0.0005,
+                0.0005,
+                0.0005,
+                0.005,
+                0.005,
+                0.005
+            ],
+            "range": [
+                0.2,
+                0.2,
+                0.2,
+                0.1,
+                0.1,
+                0.1
+            ]
+        },
+        "position_axis_scale": [
+            0.35,
+            0.35,
+            1
+        ],
+        "position_damping": 3.5,
+        "position_deadband_m": 0.0005,
+        "position_return_breakaway_force_n": 0.25,
+        "position_return_transition_m": 0.002,
+        "position_scale": 1,
+        "position_stiffness": 30,
+        "rotation_axis_scale": [
+            0.25,
+            0.25,
+            0.25
+        ],
+        "rotation_damping": 0.12,
+        "rotation_deadband_rad": 0.003,
+        "rotation_return_breakaway_torque_nm": 0.02,
+        "rotation_return_transition_rad": 0.02,
+        "rotation_scale": 1,
+        "rotation_stiffness": 1.5
+    },
+    "log_directory": "runtime_logs",
+    "mit": {
+        "allow_real_mit": true,
+        "cache_recovery_speed_level": 5,
+        "center_joint_position_rad": [
+            0.000192,
+            1.070895,
+            -0.514038,
+            -0.630388,
+            -0.004387,
+            -0.057031
+        ],
+        "joint_center_assist_activation_rad": 0.3,
+        "joint_center_assist_kd_nm_s_rad": [
+            0.06,
+            0.09,
+            0.09,
+            0.048,
+            0.03,
+            0.018
+        ],
+        "joint_center_assist_kp_nm_rad": [
+            1,
+            1.5,
+            1.5,
+            0.8,
+            0.5,
+            0.3
+        ],
+        "joint_center_assist_limit_nm": 2,
+        "joint_kd": 0,
+        "joint_kp": 0,
+        "max_failures": 3,
+        "normal_joint_kd": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+        ],
+        "normal_joint_kp": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+        ],
+        "period_ms": 5,
+        "static_friction_activation_nm": 0.08,
+        "static_friction_negative_nm": [
+            0.15,
+            0.35,
+            0.95,
+            0.4,
+            0.025,
+            0.02
+        ],
+        "static_friction_positive_nm": [
+            0.15,
+            0.12,
+            0.35,
+            0.2,
+            0.04,
+            0.035
+        ],
+        "static_friction_velocity_rad_s": 0.03,
+        "watchdog_ms": 100
+    },
+    "poll_interval_ms": 100
 }

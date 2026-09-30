@@ -14,15 +14,15 @@ QString applicationModeName(ApplicationMode mode) { return mode == ApplicationMo
 
 bool HandleModeManager::enterHandle(const ArmSnapshot& arm, QString* reason) {
   if (arm.connection != ConnectionState::Connected) {
-    *reason = "Controller is not connected.";
+    *reason = "控制器尚未连接。";
     return false;
   }
   if (arm.servo != ServoState::Enabled) {
-    *reason = "Servo is not enabled. Press Reset + Enable first.";
+    *reason = "伺服未使能，请确认条件后执行复位并使能。";
     return false;
   }
   if (arm.safety != SafetyState::Normal) {
-    *reason = "Controller safety state is not normal.";
+    *reason = "控制器安全状态异常。";
     return false;
   }
   mode_ = ApplicationMode::Handle;

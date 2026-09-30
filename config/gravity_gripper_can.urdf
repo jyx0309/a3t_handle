@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<!-- Gravity-only model: original arm inertials and joints preserved.
+     Whole gripper payload from Teach Pendant screenshot 2026-09-29 14:47:45.
+     gripper_base is coincident with link6; finger masses are included in payload.
+     Not a simulator model; no camera mass independently identified. -->
+<robot name="carm_a3t">
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-0.00409527660121373 5.90894936936664E-05 0.0446362213707342" rpy="0 0 0" />
+      <mass value="1.36105969667866" />
+      <inertia ixx="0.00122631089415545" ixy="-5.71672656457141E-07" ixz="1.05497237206159E-05" iyy="0.00113882987707198" iyz="-7.08769010282163E-07" izz="0.00191576649874932" />
+    </inertial>
+  </link>
+  <link name="link1">
+    <inertial>
+      <origin xyz="6.48441005695729E-05 0.0021796738160574 -0.0127443497980505" rpy="0 0 0" />
+      <mass value="1.0691939136228" />
+      <inertia ixx="0.00061595684409252" ixy="8.58812922462988E-07" ixz="1.01166600637937E-06" iyy="0.000855512176533614" iyz="1.14928683361585E-06" izz="0.000641480036189263" />
+    </inertial>
+  </link>
+  <joint name="joint1" type="revolute">
+    <origin xyz="0 0 0.157" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="link1" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.9671" upper="2.9671" effort="100" velocity="10" />
+  </joint>
+  <link name="link2">
+    <inertial>
+      <origin xyz="0.159632858855247 -0.000691707490590762 0.000590542545394937" rpy="0 0 0" />
+      <mass value="0.784385785822906" />
+      <inertia ixx="0.000284168780515451" ixy="1.08581894207497E-05" ixz="2.13041922697721E-06" iyy="0.00350547398449172" iyz="1.48335837301845E-07" izz="0.00352682625022791" />
+    </inertial>
+  </link>
+  <joint name="joint2" type="revolute">
+    <origin xyz="0 0 0" rpy="1.5708 0 3.1416" />
+    <parent link="link1" />
+    <child link="link2" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="3.1416" effort="100" velocity="10" />
+  </joint>
+  <link name="link3">
+    <inertial>
+      <origin xyz="0.118976521263863 -0.0122316084828573 0.00145292838912772" rpy="0 0 0" />
+      <mass value="1.36149292049338" />
+      <inertia ixx="0.000559931868123051" ixy="-5.60834228860044E-05" ixz="1.38140175262678E-05" iyy="0.000898009834423871" iyz="5.21237226778979E-06" izz="0.00100905450705078" />
+    </inertial>
+  </link>
+  <joint name="joint3" type="revolute">
+    <origin xyz="0.35 0 0" rpy="0 0 2.8248" />
+    <parent link="link2" />
+    <child link="link3" />
+    <axis xyz="0 0 1" />
+    <limit lower="-3.1416" upper="0" effort="100" velocity="10" />
+  </joint>
+  <link name="link4">
+    <inertial>
+      <origin xyz="0.0619870796562267 -0.0479683454400761 0.00567887456225965" rpy="0 0 0" />
+      <mass value="0.511633619156129" />
+      <inertia ixx="0.000202075741777805" ixy="8.66631649503644E-06" ixz="3.36669302213007E-05" iyy="0.00026907097425192" iyz="-1.21043009623123E-05" izz="0.000192285611442839" />
+    </inertial>
+  </link>
+  <joint name="joint4" type="revolute">
+    <origin xyz="0.25362 0 0" rpy="0 0 0.31676" />
+    <parent link="link3" />
+    <child link="link4" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.5708" upper="1.5708" effort="100" velocity="10" />
+  </joint>
+  <link name="link5">
+    <inertial>
+      <origin xyz="6.67979071629441E-05 -0.011817030838864 -0.00581003541778291" rpy="0 0 0" />
+      <mass value="0.410290998323558" />
+      <inertia ixx="0.000144471829706361" ixy="-9.79885495339684E-08" ixz="4.58567267657772E-08" iyy="0.000174504574575317" iyz="1.50719723817707E-05" izz="0.000132831845479143" />
+    </inertial>
+  </link>
+  <joint name="joint5" type="revolute">
+    <origin xyz="0.0785 0 0" rpy="-1.5708 1.5708 0" />
+    <parent link="link4" />
+    <child link="link5" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.6581" upper="1.6581" effort="100" velocity="10" />
+  </joint>
+  <link name="link6">
+    <inertial>
+      <origin xyz="-9.19711299322279E-05 6.0325920551005E-05 -0.00681102706144216" rpy="0 0 0" />
+      <mass value="0.0450206270542347" />
+      <inertia ixx="5.78257011377648E-06" ixy="-3.1894396915206E-10" ixz="-1.05281319489723E-08" iyy="5.91763358506137E-06" iyz="-6.16619179943041E-09" izz="1.03194402016347E-05" />
+    </inertial>
+  </link>
+  <joint name="joint6" type="revolute">
+    <origin xyz="0 -0.0465 0" rpy="1.5708 1.5708 0" />
+    <parent link="link5" />
+    <child link="link6" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.8274" upper="2.8274" effort="100" velocity="10" />
+  </joint>
+  <link name="gripper_base">
+    <inertial>
+      <origin xyz="0 0 0.033631" rpy="0 0 0" />
+      <mass value="0.537306" />
+      <inertia ixx="0.000255" ixy="0" ixz="0" iyy="0.000136" iyz="0" izz="0.000332" />
+    </inertial>
+  </link>
+  <joint name="joint6_to_gripper_base" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="link6" />
+    <child link="gripper_base" />
+  </joint>
+  <link name="gripper_right">
+    <inertial>
+      <origin xyz="-0.00119999830259251 -0.0068017764750606 -0.00828189774110881" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+    </inertial>
+  </link>
+  <joint name="gripper_right_joint" type="prismatic">
+    <origin xyz="0.0012 -0.0217 0.081" rpy="1.5708 0 0" />
+    <parent link="gripper_base" />
+    <child link="gripper_right" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0.037" effort="27" velocity="10" />
+  </joint>
+  <link name="gripper_left">
+    <inertial>
+      <origin xyz="0.00120000169738422 -0.00680177647501988 -0.0082818977411101" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+    </inertial>
+  </link>
+  <joint name="gripper_left_joint" type="prismatic">
+    <origin xyz="0.0012 0.0217 0.081" rpy="1.5708 0 3.1416" />
+    <parent link="gripper_base" />
+    <child link="gripper_left" />
+    <axis xyz="0 0 1" />
+    <mimic joint="gripper_right_joint" multiplier="1" offset="0" />
+    <limit lower="0" upper="0.037" effort="27" velocity="10" />
+  </joint>
+</robot>

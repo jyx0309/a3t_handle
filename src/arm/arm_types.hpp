@@ -23,10 +23,27 @@ struct ArmSnapshot {
   bool vendor_debug_mode{false};
   bool handle_center_captured{false};
   std::vector<double> joint_position;
+  std::vector<double> joint_velocity;
   std::array<double, 7> cartesian_pose{};
   std::array<double, 6> handle_command{};
   std::array<double, 6> virtual_wrench{};
   QString error;
+  bool low_session{false};
+  bool exit_pending{false};
+  bool mit_running{false};
+  bool gravity_test{false};
+  bool friction_batch_active{false};
+  int friction_batch_completed{0};
+  bool mit_startup_holding{false};
+  bool gravity_only_unlimited{false};
+  bool log_ready{false};
+  QString session_directory;
+  QString last_sdk_call;
+  int last_sdk_result{0};
+  double last_sdk_ms{0};
+  double last_send_gap_ms{-1};
+  double first_send_delay_ms{-1};
+  int mit_frames{0};
 };
 
 Q_DECLARE_METATYPE(ArmSnapshot)

@@ -3,11 +3,18 @@
 #include <QFile>
 #include <QString>
 #include <QTextStream>
+#include <QElapsedTimer>
+#include <QJsonObject>
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <thread>
 
 #include "arm/arm_types.hpp"
 #include "math/handle_controller.hpp"
 
-// All methods are called from ArmWorker's single control thread.
+// Producer methods run on ArmWorker; serialization and file IO run on writer_.
 class SessionLogger final {
  public:
   explicit SessionLogger(const QString& root_directory);
@@ -20,24 +27,26 @@ class SessionLogger final {
   void state(const ArmSnapshot& snapshot);
   void performance(const QString& name, double milliseconds);
   void handle(const HandleOutput& output);
+  void diagnostic(QJsonObject record);
 
  private:
   static QString timestamp();
   static QString csv(const QString& value);
   static QString vectorText(const std::vector<double>& values);
   static QString poseText(const std::array<double, 7>& pose);
-  void write(QTextStream& stream, const QString& line);
+  enum Destination { Events, Commands, States, Performance, Handle, Diagnostic, Count };
+  struct Record { Destination destination; QString line; QJsonObject json; };
+  void write(Destination destination, const QString& line);
+  void enqueue(Record record);
+  void runWriter();
 
-  bool ready_{false};
+  std::atomic<bool> ready_{false};
+  QElapsedTimer diagnostic_clock_;
   QString session_directory_;
-  QFile events_file_;
-  QFile commands_file_;
-  QFile states_file_;
-  QFile performance_file_;
-  QFile handle_file_;
-  QTextStream events_;
-  QTextStream commands_;
-  QTextStream states_;
-  QTextStream performance_;
-  QTextStream handle_;
+  std::mutex mutex_;
+  std::condition_variable wake_;
+  std::deque<Record> queue_;
+  bool initialized_{false}, stopping_{false};
+  static constexpr size_t queue_capacity_ = 8192;
+  std::thread writer_;
 };
